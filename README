@@ -1,0 +1,15 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=4939
+
+TWstack has several commands for changing tab pages and windows.
+There are commands for changing to the previously active window of tab
+page.  There are also commands for saving window and tab pages on
+stacks and returning to those saved windows and tab pages, also 
+commands for viewing and manipulating those stacks.
+
+All of the saved window and tab page information is done using unique
+identifiers assigned to each window and tab page when they are created.
+Changing the order of the windows or tab pages will not affect the saved
+information.
+
+Read the help file for detailed information:
+:help twstack.txt

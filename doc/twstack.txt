@@ -1,0 +1,407 @@
+*twstack.txt*	Tab and window stacks
+
+
+	VIM REFERENCE MANUAL for TWstack by Steve Jones
+
+							*TWstack* *tws*
+The TWstack plugin is a set of smart commands for moving between tab pages and
+windows with history stacks.
+
+1. Commands			|tws-commands|
+   1.1 Normal Mode Commands	|tws-normal|
+   1.2 Ex Commands		|tws-ex|
+   1.3 Examples			|tws-examples|
+2. Public Interface		|tws-public|
+   2.1 Configuration		|tws-config|
+   2.2 Public Functions		|tws-functions|
+3. Copyright and revision info	|tws-copyright|
+
+==============================================================================
+1. Commands						*tws-commands*
+
+TWstack has several commands for changing tab pages and windows.  There are
+commands for changing to the previously active window of tab page.  There are
+also commands for saving window and tab pages on stacks and returning to those
+saved windows and tab pages, also commands for viewing and manipulating those
+stacks.
+
+All of the saved window and tab page information is done using unique
+identifiers assigned to each window and tab page when they are created.
+Changing the order of the windows or tab pages will not affect the saved
+information.
+
+All commands that reference different windows or tab pages use Vim's tab page
+and window numbers as arguments so the user does not need to know the unique
+identifier.
+
+The tab page stack is stored as a global list.  The window stacks are stored
+as tab local variables so each tab page has its own window stack.
+
+==============================================================================
+1.1 Normal Mode Commands				*tws-normal*
+
+Tab Page Commands~
+
+gy							*gy*
+			Go to the previously active tab page.  This command
+			will always go to last active tab page even if the tab
+			pages have been reordered.  Any count is ignored.
+
+gX							*gX*
+			Push the current tab page on to the tab page stack.
+
+[N]gX			Push the current tab page and change to tab page
+			number N.  If N is the current tab page then just push
+			the current tab and do not change tab pages.
+
+0gX			The same as gX.  0 is the same as the current tab
+			page.
+
+gY							*gY*
+			Pop the top of the tab page stack and change to that
+			tab page.
+
+[N]gY			Pop the Nth entry from the tab page stack starting at
+			0, and change to that tab page.
+
+gO							*gO*
+			Display the tab page stack as a space separated string
+			of Vim tab page numbers.  Invalid tab page entries are
+			listed as 0.  The leftmost tab page number is the top
+			of the stack.
+
+[N]gM							*gM*
+			Rotate the tab page stack so that the entry indexed at
+			N (starting at 0) is at the top of the stack.  If N is
+			omitted the rotate by 1.  Display the new Stack.
+
+Window Commands~
+
+CTRL-W y					*CTRL-W_y* *CTRL-W_CTRL-Y*
+CTRL-W CTRL-Y		Got to the previously active window in the current tab
+			page.  This is similar to |CTRL-W_p|.  This command
+			will always go to the last active window even if the
+			widows have been reordered.  Any count is ignored.
+
+CTRL-W X							*CTRL-W_X*
+			Push the current window on to the current tab page
+			window stack.
+
+[N]CTRL-W X		Push the current window and change to window number N.
+			If N is the current window then just push the current
+			window and do not change windows.
+
+0CTRL-W X		The same as CTRL-W X.  0 is the same as the current
+			window.
+
+CTRL-W Y						*CTRL-W_Y*
+			Pop the top of the current tab page window stack and
+			change to that window.
+
+[N]CTRL-W Y		Pop the Nth entry from the current tab page window
+			stack starting at 0, and change to that window.
+
+[N]CTRL-W O							*CTRL-W_O*
+			Display the current tab page window stack, if N is
+			missing or 0, as a space separated string of Vim
+			window numbers.  If N is not 0 then display the window
+			stack for tab page N.  Invalid window entries are
+			listed as 0.  The leftmost window number is the top of
+			the stack.
+
+[N]CTRL-W M							*CTRL-W_M*
+			Rotate the current tab page window stack so that the
+			entry indexed at N (starting at 0) is at the top of
+			the stack.  If N is omitted the rotate by 1.  Display
+			the new Stack.
+
+==============================================================================
+1.2 Ex Commands						*tws-ex*
+
+All TWstack Ex commands can be combined together with the '|', see |:bar|.
+
+:[N]Tpush[!]					*:Tpush*
+			Push the current tab page number on to the tab page
+			stack and change to tab page N.  If N is 0, missing or
+			the number of the current tab page then push the
+			current tab page and do not change tab pages.  If ! is
+			given then push tab page number N on the stack and do
+			not change the tab page.
+
+:[N]Tpop[!]						*:Tpop*
+			Pop the top of the tab page stack and change to that
+			tab page.  If ! is given, pop the stack and do not
+			change tab pages.  If N is given then pop the Nth
+			entry starting at 0.
+
+:Tstack							*:Tstack*
+			Display the tab page stack as a space separated string
+			of Vim tab page numbers.  Invalid tab page entries are
+			listed as 0.  The leftmost tab page number is the top
+			of the stack.  The output is saved in Vim's
+			|message-history|.
+
+:[N]Tsrot						*:Tsrot*
+			Rotate the tab page stack so that the entry indexed at
+			N (starting at 0) is at the top of the stack and then
+			display the new Stack.  If N is omitted then rotate by
+			1.  The output is saved in Vim's |message-history|.
+
+:[N]Wpush[!]						*:Wpush*
+			Push the current window number on to the current tab
+			page window stack and change to window N.  If N is 0,
+			missing or the number of the current window then push
+			the current window and do not change windows.  If ! is
+			given then push window number N on the stack and do
+			not change the window.
+
+:[N]Wpop[!]						*:Wpop*
+			Pop the top of the current tab page window stack and
+			change to that window.  If ! is given the pop the
+			stack and do not change windows.  If N is given then
+			pop the Nth entry starting at 0.
+
+:[N]Wstack						*:Wstack*
+			Display the window stack of the current tab page, if N
+			is 0 of missing, as a space separated string of Vim
+			window numbers.  If N is not 0 then display the window
+			stack for tab page N.  Invalid window entries are
+			listed as 0.  The leftmost window number is the top of
+			the stack.  The output is saved in Vim's
+			|message-history|.
+
+:[N]Wsrot						*:Wsrot*
+			Rotate the current tab page window stack so that the
+			entry indexed at N (starting at 0) is at the top of
+			the stack and then display the new Stack.  If N is
+			omitted then rotate by 1.  The output is saved in
+			Vim's |message-history|.
+
+==============================================================================
+1.3 Examples						*tws-examples*
+
+Since multiple TWstack commands can be on the same command line separated by a
+'|', the user can preform operations such as popping both the tab stack and the
+target tab page window stack. >
+	:Tpop | Wpop 
+Of course more complex actions are available, such as:
+>
+	:3Tpush | 2Wsrot | Tpop
+
+This changes to tab page number 3, rotates it's window stack so that index 2
+is now the top of the stack, and then returns to the original tab page.
+
+==============================================================================
+2. Public Interface					*tws-public*
+
+TWstack provides a public programming interface.  Every tab page and window
+has a locally stored unique identifier.  For tab pages it is the tab local
+variable t:twtabident.  For windows it is the window local variable
+w:twwinident.  The window identifiers are only unique to the tab page that
+contains the window.
+
+The global variable g:twtabcount contains the tab identifier that will be used
+for the next created tab page.  The tab local variable t:twwincount contains
+the window identifier that will be used for the next created window in that
+tab page.  Users should never adjust the value of g:twtabcount or
+t:twwincount, as this may cause duplicate identifiers to be set.
+
+The identifiers are integers, and will always be incremented and therefore be
+unique within the above stated limitations.  The identifier for a closed
+window or tab page will not be reused.  This can lead to one issue if the user
+creates and closes enough tab pages or windows to cause the identifier to
+overflow all the way back to 0.  Negative numbers are valid identifiers.  Only
+0 is an invalid identifier.
+
+The identifiers may not be the same when using views or session files.  The
+identifiers are not recorded in the viminfo, session, or view files.  They are
+created by autocommands triggered by |BufWinEnter|, |WinEnter|, and |TabEnter|
+events.
+
+==============================================================================
+2.1 Configuration					*tws-config*
+
+TWstack uses some global variables to configure various operations.  All
+global configuration variables can be saved in the session files if global is
+set in 'sessionoptions'.
+
+g:TWtabpopuntilvalid					*g:TWtabpopuntilvalid*
+			If this variable is set and is not 0 then :Tpop,
+			TWTpop(), and gY will discard any invalid tab
+			identifier and pop another identifier until a valid
+			identifier is found.  If it is 0 or not set then the
+			tab page pop commands will echo a message stating that
+			they found an invalid tab page identifier after
+			discarding the invalid stack entry.
+
+g:TWwinpopuntilvalid					*g:TWwinpopuntilvalid*
+			The same as g:TWtabpopuntilvalid but for the window
+			stacks.
+
+t:TWwinpopuntilvalid					*t:TWwinpopuntilvalid*
+			Overrides g:TWwinpopuntilvalid for the containing tab
+			page.  This can only be set after the tab page has been
+			created and can not be saved in the session file.
+
+==============================================================================
+2.2 Public Functions					*tws-functions*
+
+Tab Functions~
+
+TWtabnr({tabident})					*TWtabnr()*
+			Return the tab number of the tab page with the TWstack
+			identifier {tabident}.  If no tab matches {tabident},
+			return 0.
+
+TWTpush({cflag}, {tabnr})				*TWTpush()*
+			If {cflag} is 1, then push the current tab page
+			identifier on to the tab page stack (g:twtabstack) and
+			change to the tab page {tabnr}, if {tabnr} is 0 or the
+			number of the current tab page, then do not try to
+			change tab pages.
+
+			If {cflag} is 0, push the identifier of tab page
+			number {tabnr} and do not change tab pages.
+
+			Returns the Vim tab page number of the tab page that
+			was pushed on to the stack or 0 on error.
+
+TWTpop({cflag}, {stackpos})				*TWTpop()*
+			Pop the top of the tab page stack (g:twtabstack), and
+			change to that tab page if {cflag} is 1.  If {cflag}
+			is 0 then do not change tab pages.  If {stackpos} is
+			not 0 then pop the entry indexed at {stackpos}
+			(starting at 0).
+
+			Returns the Vim tab page number of the tab page that
+			was popped off the stack or 0 on error.
+
+TWTstack()						*TWTstack()*
+			Print out the contents of the tab page stack using the
+			Vim tab page numbers.  Invalid tab pages are listed as
+			0.  Returns the string that was displayed.  The output
+			is saved in Vim's |message-history|.
+
+TWTsrot({stackpos})					*TWTsrot()*
+			Rotate the tab page stack so that the entry indexed at
+			{stackpos}  (starting at 0) is at the top of the
+			stack.  Display the new stack and return the same
+			string.  The output is saved in Vim's |message-history|.
+			Return 0 on error.
+
+Window Functions~
+
+TWwinnr({winident}[, {tabnr})				*TWwinnr()*
+			Return the window number for the window with the
+			TWstack identifier {winident}.  If {tabnr} is not
+			present or 0, then return the window number for the
+			current tab.  If no window matches {winident} then
+			return 0. >
+
+			let winnr = TWwinnr(wident, TWtabnr(tident))
+<
+			Set winnr to the window number of tab tident, window
+			wident.
+
+TWWpush({cflag}, {winnr})				*TWWpush()*
+			If {cflag} is 1, then push the current window
+			identifier on to the current window stack
+			(t:twwinstack) and change to the window {winnr}, if
+			{winnr} is 0 or the number of the current window, then
+			do not try to change windows.
+
+			If {cflag} is 0, push the identifier of window
+			number {winnr} and do not change windows.
+
+			Returns the Vim window number of the window that
+			was pushed on to the stack or 0 on error.
+
+TWWpop({cflag}, {stackpos})				*TWWpop()*
+			Pop the top of the current window stack
+			(t:twwinstack), and change to that window if {cflag}
+			is 1.  If {cflag} is 0 then do not change windows.  If
+			{stackpos} is not 0 then pop the entry indexed at
+			{stackpos} (starting at 0).
+
+			Return the Vim window number of the window that
+			was popped off the stack or 0 on error.
+
+TWWstack({tabnr})					*TWWstack()*
+			Print out the contents of the window stack for tab
+			page {tabnr} using the Vim window numbers.  If {tabnr}
+			is 0 then use the window stack for the current tab
+			page.  Invalid windows are listed as 0.  Returns the
+			string that was displayed.  The output is saved in
+			Vim's |message-history|.  Return 0 on error.
+
+TWWsrot({stackpos})					*TWWsrot()*
+			Rotate the window stack contained by the current tab
+			page so that the entry indexed at {stackpos}
+			(starting at 0) is at the top of the stack.  Display
+			the new stack and return the same string.  The output
+			is saved in Vim's |message-history|.  Return 0 on
+			error.
+
+==============================================================================
+3. Copyright and revision info				*tws-copyright*
+
+Copyright (C) 2014 Steve Jones <sjout@slohj.org>
+
+The TWstack plugin is distributed under the Vim license.  See |license|.
+
+TWstack consists of the following files: >
+
+	plugin/twstack.vim
+	doc/twstack.txt
+<
+See each file for changelogs.
+
+Changelog for twstack.txt~
+
+2014-05-18
+	Add TWWstack(), Wstack, and <C-W>O.
+
+	Add TWWsrot(), Wsrot, and <C-W>M.
+
+	Layout fixes.  Note about counts in the y normal mode commands.
+
+	More layout fixes.
+
+	Version 1.00.
+
+2014-05-17
+	Grammar and style fixes.
+
+	Add TWWpush(), Wpush, and <C-W>X.
+
+	Add TWWpop(), Wpop, <C-W>Y.
+
+2014-05-16
+	Formatting and grammar fixes.
+
+	Remove exception for bar.
+
+2014-05-15
+	All number options must come before the command.
+
+	Clarify indexes start at 0.
+
+2014-05-14
+	Add tab page stack rotate and display commands.
+
+	Add return values for all functions.
+
+2014-05-13
+	Add tab page stack push and pop commands and functions.
+
+	Add subsection on configuration variables.
+
+	Add count to Tpop.  Add Tstack and Tsrot.  Add comment on '|'.
+
+2014-05-07
+	First full version.
+
+$Revision: 220 $
+==============================================================================
+
+ vim:tw=78:ts=8:ft=help:norl:ai:
